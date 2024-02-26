@@ -4,7 +4,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 import time
 from Packages.NaverDeveloper import *
-from Packages.KeywordStat import *
+from Packages.NaverAdvertising import *
 from Packages.GoogleSheetHandler import *
 from Packages.Utilize import *
 from Packages.ExcelHandler import *
@@ -32,14 +32,14 @@ class Presenter:
         self.view.upload_button.clicked.connect(self.upload_and_process_xlsx)
 
         # 버튼 비활성화 초기 상태 설정
-        self.update_button_state()
+        # self.update_button_state()
 
-        # 입력 필드의 텍스트가 변경될 때마다 버튼 상태 업데이트
-        self.view.input_nd_client_id.textChanged.connect(self.update_button_state)
-        self.view.input_nd_client_secret.textChanged.connect(self.update_button_state)
-        self.view.input_na_api_key.textChanged.connect(self.update_button_state)
-        self.view.input_na_secret_key.textChanged.connect(self.update_button_state)
-        self.view.input_na_customer_id.textChanged.connect(self.update_button_state)
+        # # 입력 필드의 텍스트가 변경될 때마다 버튼 상태 업데이트
+        # self.view.input_nd_client_id.textChanged.connect(self.update_button_state)
+        # self.view.input_nd_client_secret.textChanged.connect(self.update_button_state)
+        # self.view.input_na_api_key.textChanged.connect(self.update_button_state)
+        # self.view.input_na_secret_key.textChanged.connect(self.update_button_state)
+        # self.view.input_na_customer_id.textChanged.connect(self.update_button_state)
 
     def upload_and_process_xlsx(self):
         # 버튼 활성화 여부 확인 후 처리 로직 수행
@@ -72,34 +72,4 @@ class Presenter:
         logging.info("파일이 업데이트되었습니다.")
 
     def update_button_state(self):
-        # 입력 필드의 텍스트를 확인하여 버튼 활성/비활성화 결정
-        nd_client_id = self.view.input_nd_client_id.text()
-        nd_client_secret = self.view.input_nd_client_secret.text()
-        na_api_key = self.view.input_na_api_key.text()
-        na_secret_key = self.view.input_na_secret_key.text()
-        na_customer_id = self.view.input_na_customer_id.text()
-
-        if (
-            nd_client_id
-            and nd_client_secret
-            and na_api_key
-            and na_secret_key
-            and na_customer_id
-        ):
-            # Setting API keys in the model
-            self.model.naver_developer.set_lazy_initialize(
-                nd_client_id, nd_client_secret
-            )
-            self.model.keyword_stat.set_lazy_initialize(
-                na_api_key, na_secret_key, na_customer_id
-            )
-
-            self.view.upload_button.setEnabled(True)
-            self.view.upload_button.setStyleSheet(
-                "background-color: white; padding: 10px; color: green"
-            )
-        else:
-            self.view.upload_button.setEnabled(False)
-            self.view.upload_button.setStyleSheet(
-                "background-color: lightgray; padding: 10px; color: gray"
-            )
+        pass

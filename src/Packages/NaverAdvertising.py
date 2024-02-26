@@ -19,7 +19,7 @@ class Signature:
         return base64.b64encode(hash.digest())
 
 
-class KeywordStat:
+class NaverAdvertising:
     base_url = "https://api.naver.com"
     endpoint = "/keywordstool"
 

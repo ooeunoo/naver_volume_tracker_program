@@ -16,7 +16,7 @@ import pandas as pd
 import time
 import sys
 from Packages.NaverDeveloper import *
-from Packages.KeywordStat import *
+from Packages.NaverAdvertising import *
 from Packages.GoogleSheetHandler import *
 from Packages.Utilize import *
 from Packages.ExcelHandler import *
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         None,
         None,
     )
-    keywordStat = KeywordStat(
+    keywordStat = NaverAdvertising(
         None,
         None,
         None,

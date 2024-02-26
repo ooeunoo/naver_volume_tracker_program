@@ -6,7 +6,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 import pandas as pd
 import time
 from Packages.NaverDeveloper import *
-from Packages.KeywordStat import *
+from Packages.NaverAdvertising import *
 from Packages.GoogleSheetHandler import *
 from Packages.Utilize import *
 from Packages.ExcelHandler import *
@@ -34,9 +34,7 @@ class Model(QObject):
         if not input_file:
             return
 
-        excelHandler = ExcelHandler(
-            input_file,
-        )
+        excelHandler = ExcelHandler(input_file)
 
         task_keywords = excelHandler.get_all_keywords()
         self.progress_guide.emit(f"키워드 가져오는 중...")
