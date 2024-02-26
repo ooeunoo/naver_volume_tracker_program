@@ -1,6 +1,7 @@
 import pandas as pd
 import urllib.request
 import json
+import time
 
 
 class NaverDeveloper:
@@ -15,6 +16,8 @@ class NaverDeveloper:
         self.client_id = client_id
         self.client_secret = client_secret
 
+
+
     def get_ratio(self, keyword, start_date, end_date):
         response_results_all = pd.DataFrame()
 
@@ -26,18 +29,19 @@ class NaverDeveloper:
         # body_dict['device']='mo'
 
         body = str(body_dict).replace("'", '"')  # ' 문자로는 에러가 발생해서 " 로 변환
-
         request = urllib.request.Request(self.datalab_url)
         request.add_header("X-Naver-Client-Id", self.client_id)
         request.add_header("X-Naver-Client-Secret", self.client_secret)
         request.add_header("Content-Type", "application/json")
         response = urllib.request.urlopen(request, data=body.encode("utf-8"))
         rescode = response.getcode()
+        
         if rescode == 200:
             response_body = response.read()
             response_json = json.loads(response_body)
         else:
             print("Error Code:" + rescode)
+
         response_results = pd.DataFrame()
         for data in response_json["results"]:
             result = pd.DataFrame(data["data"])

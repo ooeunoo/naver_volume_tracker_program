@@ -7,9 +7,11 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QLabel,
     QFileDialog,
-    QHBoxLayout,QLineEdit
+    QHBoxLayout,
+    QLineEdit
+
 )
-from PyQt5.QtCore import QThread, pyqtSignal, QObject
+from PyQt5.QtCore import QThread, pyqtSignal, QObject,QSettings
 
 import pandas as pd
 import time
@@ -22,7 +24,6 @@ from Packages.ExcelHandler import *
 from datetime import datetime
 import os
 import logging
-from config.config import *
 
 # 로그 설정
 logging.basicConfig(level=logging.DEBUG,
@@ -73,10 +74,12 @@ class Model(QObject):
         update_cells = {}
 
         for row, keyword in task_keywords:
+            time.sleep(0.5)
             self.progress_updated.emit(f"월별 거래량 가져오는 중...")
             try:
                 volume = self.get_monthly_volume(keyword, "2023-01-01", "2024-01-01")
             except Exception as e:
+                print(e)
                 logging.warning(f'{keyword} 월별 거래량 가져오기 실패: {e}')
                 volume = pd.DataFrame()
 
@@ -103,7 +106,8 @@ class Model(QObject):
                     "해외 상품수": total_cbshop_items,
                     "해외 상품 비율": "{:.2f}%".format(
                         total_cbshop_items / total_items * 100
-                    )
+                    ),
+                    "업데이트": str(utilize.get_time()),
                 }
                 months = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"]
                 for month in months:
@@ -144,6 +148,8 @@ class View(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.settings = QSettings("Naver", "Naver")  # 설정을 저장할 QSettings 인스턴스 생성
+
         self.setWindowTitle("네이버 키워드 검색량 조회")
         self.setGeometry(100, 100, 400, 200)
         self.setStyleSheet("background-color: white;")
@@ -170,23 +176,46 @@ class View(QWidget):
         self.process_guide.setStyleSheet("background-color: white; color: blue")
 
         # 환경변수 정보
-        layout_api_key1, self.line_edit_api_key1 = self.generate_label_and_lineedit("NAVER_DEVELOPER_CLIENT_ID: ")
-        layout_api_key2, self.line_edit_api_key2 = self.generate_label_and_lineedit("NAVER_DEVELOPER_CLIENT_SECRET: ")
-        layout_api_key3, self.line_edit_api_key3 = self.generate_label_and_lineedit("NAVER_AD_API_KEY: ")
-        layout_api_key4, self.line_edit_api_key4 = self.generate_label_and_lineedit("NAVER_AD_SECRET_KEY: ")
-        layout_api_key5, self.line_edit_api_key5 = self.generate_label_and_lineedit("NAVER_AD_CUSTOMER_ID: ")
+        layout_naver_developer_client_id, self.line_edit_naver_developer_client_id = self.generate_label_and_lineedit("NAVER_DEVELOPER_CLIENT_ID: ")
+        layout_naver_developer_client_secret, self.line_edit_naver_developer_client_secret = self.generate_label_and_lineedit("NAVER_DEVELOPER_CLIENT_SECRET: ")
+        layout_naver_ad_api_key, self.line_edit_naver_ad_api_key = self.generate_label_and_lineedit("NAVER_AD_API_KEY: ")
+        layout_naver_ad_secret_key, self.line_edit_naver_ad_secret_key = self.generate_label_and_lineedit("NAVER_AD_SECRET_KEY: ")
+        layout_naver_ad_customer_id, self.line_edit_naver_ad_customer_id = self.generate_label_and_lineedit("NAVER_AD_CUSTOMER_ID: ")
 
         layout = QVBoxLayout()
-        layout.addLayout(layout_api_key1)
-        layout.addLayout(layout_api_key2)
-        layout.addLayout(layout_api_key3)
-        layout.addLayout(layout_api_key4)
-        layout.addLayout(layout_api_key5)
+        layout.addLayout(layout_naver_developer_client_id)
+        layout.addLayout(layout_naver_developer_client_secret)
+        layout.addLayout(layout_naver_ad_api_key)
+        layout.addLayout(layout_naver_ad_secret_key)
+        layout.addLayout(layout_naver_ad_customer_id)
 
         layout.addWidget(self.upload_button)
         layout.addWidget(self.process_guide)
 
         self.setLayout(layout)
+        self.load_settings()
+
+    
+    def load_settings(self):
+        # 저장된 설정값을 불러와서 입력 필드에 설정
+        self.line_edit_naver_developer_client_id.setText(self.settings.value("NAVER_DEVELOPER_CLIENT_ID", ""))
+        self.line_edit_naver_developer_client_secret.setText(self.settings.value("NAVER_DEVELOPER_CLIENT_SECRET", ""))
+        self.line_edit_naver_ad_api_key.setText(self.settings.value("NAVER_AD_API_KEY", ""))
+        self.line_edit_naver_ad_secret_key.setText(self.settings.value("NAVER_AD_SECRET_KEY", ""))
+        self.line_edit_naver_ad_customer_id.setText(self.settings.value("NAVER_AD_CUSTOMER_ID", ""))
+
+    def save_settings(self):
+        # 현재 입력된 설정값을 저장
+        self.settings.setValue("NAVER_DEVELOPER_CLIENT_ID", self.line_edit_naver_developer_client_id.text())
+        self.settings.setValue("NAVER_DEVELOPER_CLIENT_SECRET", self.line_edit_naver_developer_client_secret.text())
+        self.settings.setValue("NAVER_AD_API_KEY", self.line_edit_naver_ad_api_key.text())
+        self.settings.setValue("NAVER_AD_SECRET_KEY", self.line_edit_naver_ad_secret_key.text())
+        self.settings.setValue("NAVER_AD_CUSTOMER_ID", self.line_edit_naver_ad_customer_id.text())
+
+   # 사용자가 애플리케이션을 종료할 때 설정값을 저장
+    def closeEvent(self, event):
+        self.save_settings()
+        event.accept()
 
 
 class Presenter:
@@ -200,11 +229,11 @@ class Presenter:
         self.update_button_state()
 
         # 입력 필드의 텍스트가 변경될 때마다 버튼 상태 업데이트
-        self.view.line_edit_api_key1.textChanged.connect(self.update_button_state)
-        self.view.line_edit_api_key2.textChanged.connect(self.update_button_state)
-        self.view.line_edit_api_key3.textChanged.connect(self.update_button_state)
-        self.view.line_edit_api_key4.textChanged.connect(self.update_button_state)
-        self.view.line_edit_api_key5.textChanged.connect(self.update_button_state)
+        self.view.line_edit_naver_developer_client_id.textChanged.connect(self.update_button_state)
+        self.view.line_edit_naver_developer_client_secret.textChanged.connect(self.update_button_state)
+        self.view.line_edit_naver_ad_api_key.textChanged.connect(self.update_button_state)
+        self.view.line_edit_naver_ad_secret_key.textChanged.connect(self.update_button_state)
+        self.view.line_edit_naver_ad_customer_id.textChanged.connect(self.update_button_state)
 
 
     def upload_and_process_xlsx(self):
@@ -237,13 +266,13 @@ class Presenter:
 
     def update_button_state(self):
         # 입력 필드의 텍스트를 확인하여 버튼 활성/비활성화 결정
-        api_key1 = self.view.line_edit_api_key1.text()
-        api_key2 = self.view.line_edit_api_key2.text()
-        api_key3 = self.view.line_edit_api_key3.text()
-        api_key4 = self.view.line_edit_api_key4.text()
-        api_key5 = self.view.line_edit_api_key5.text()
+        NAVER_DEVELOPER_CLIENT_ID = self.view.line_edit_naver_developer_client_id.text()
+        NAVER_DEVELOPER_CLIENT_SECRET = self.view.line_edit_naver_developer_client_secret.text()
+        NAVER_AD_API_KEY = self.view.line_edit_naver_ad_api_key.text()
+        NAVER_AD_SECRET_KEY = self.view.line_edit_naver_ad_secret_key.text()
+        NAVER_AD_CUSTOMER_ID = self.view.line_edit_naver_ad_customer_id.text()
 
-        if api_key1 and api_key2 and api_key3 and api_key4 and api_key5:
+        if NAVER_DEVELOPER_CLIENT_ID and NAVER_DEVELOPER_CLIENT_SECRET and NAVER_AD_API_KEY and NAVER_AD_SECRET_KEY and NAVER_AD_CUSTOMER_ID:
             # Setting API keys in the model
             self.model.naver_developer.set_lazy_initialize(NAVER_DEVELOPER_CLIENT_ID, NAVER_DEVELOPER_CLIENT_SECRET)
             self.model.keyword_stat.set_lazy_initialize(NAVER_AD_API_KEY, NAVER_AD_SECRET_KEY, NAVER_AD_CUSTOMER_ID)
