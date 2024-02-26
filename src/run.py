@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QLabel,
     QFileDialog,
+    QHBoxLayout,QLineEdit
 )
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 
@@ -44,11 +45,11 @@ class FileProcessThread(QThread):
 class Model(QObject):
     progress_updated = pyqtSignal(str)
 
-    def __init__(self, naver_developer, keyword_stat, utilize):
+    def __init__(self, naverDeveloper, keywordStat):
         super().__init__()
-        self.naver_developer = naver_developer
-        self.keyword_stat = keyword_stat
-        self.utilize = utilize
+        self.naver_developer = naverDeveloper
+        self.keyword_stat = keywordStat
+    
 
     def upload_xlsx(self):
         """xlsx 파일 업로드를 처리하는 함수"""
@@ -102,8 +103,7 @@ class Model(QObject):
                     "해외 상품수": total_cbshop_items,
                     "해외 상품 비율": "{:.2f}%".format(
                         total_cbshop_items / total_items * 100
-                    ),
-                    "업데이트": str(utilize.get_time()),
+                    )
                 }
                 months = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"]
                 for month in months:
@@ -155,12 +155,34 @@ class View(QWidget):
         button.setStyleSheet("background-color: white; padding: 10px; Color: green")
         return button
 
+
+    def generate_label_and_lineedit(self, label_text):
+        layout = QHBoxLayout()
+        label = QLabel(label_text)
+        line_edit = QLineEdit()
+        layout.addWidget(label)
+        layout.addWidget(line_edit)
+        return layout, line_edit
+
     def init_ui(self):
         self.upload_button = self.generate_button("엑셀 파일 업로드")
         self.process_guide = QLabel("파일을 업로드해주세요.")
         self.process_guide.setStyleSheet("background-color: white; color: blue")
 
+        # 환경변수 정보
+        layout_api_key1, self.line_edit_api_key1 = self.generate_label_and_lineedit("NAVER_DEVELOPER_CLIENT_ID: ")
+        layout_api_key2, self.line_edit_api_key2 = self.generate_label_and_lineedit("NAVER_DEVELOPER_CLIENT_SECRET: ")
+        layout_api_key3, self.line_edit_api_key3 = self.generate_label_and_lineedit("NAVER_AD_API_KEY: ")
+        layout_api_key4, self.line_edit_api_key4 = self.generate_label_and_lineedit("NAVER_AD_SECRET_KEY: ")
+        layout_api_key5, self.line_edit_api_key5 = self.generate_label_and_lineedit("NAVER_AD_CUSTOMER_ID: ")
+
         layout = QVBoxLayout()
+        layout.addLayout(layout_api_key1)
+        layout.addLayout(layout_api_key2)
+        layout.addLayout(layout_api_key3)
+        layout.addLayout(layout_api_key4)
+        layout.addLayout(layout_api_key5)
+
         layout.addWidget(self.upload_button)
         layout.addWidget(self.process_guide)
 
@@ -173,8 +195,23 @@ class Presenter:
         self.view = view
 
         self.view.upload_button.clicked.connect(self.upload_and_process_xlsx)
+        
+        # 버튼 비활성화 초기 상태 설정
+        self.update_button_state()
+
+        # 입력 필드의 텍스트가 변경될 때마다 버튼 상태 업데이트
+        self.view.line_edit_api_key1.textChanged.connect(self.update_button_state)
+        self.view.line_edit_api_key2.textChanged.connect(self.update_button_state)
+        self.view.line_edit_api_key3.textChanged.connect(self.update_button_state)
+        self.view.line_edit_api_key4.textChanged.connect(self.update_button_state)
+        self.view.line_edit_api_key5.textChanged.connect(self.update_button_state)
+
 
     def upload_and_process_xlsx(self):
+            # 버튼 활성화 여부 확인 후 처리 로직 수행
+        if not self.view.upload_button.isEnabled():
+            return
+        
         input_file = self.model.upload_xlsx()
         if not input_file:  # 파일이 선택되지 않은 경우 처리 중 상태를 해제하고 종료
             return
@@ -198,23 +235,42 @@ class Presenter:
         self.view.process_guide.setText("파일이 업데이트되었습니다.")
         logging.info("파일이 업데이트되었습니다.")
 
+    def update_button_state(self):
+        # 입력 필드의 텍스트를 확인하여 버튼 활성/비활성화 결정
+        api_key1 = self.view.line_edit_api_key1.text()
+        api_key2 = self.view.line_edit_api_key2.text()
+        api_key3 = self.view.line_edit_api_key3.text()
+        api_key4 = self.view.line_edit_api_key4.text()
+        api_key5 = self.view.line_edit_api_key5.text()
+
+        if api_key1 and api_key2 and api_key3 and api_key4 and api_key5:
+            # Setting API keys in the model
+            self.model.naver_developer.set_lazy_initialize(NAVER_DEVELOPER_CLIENT_ID, NAVER_DEVELOPER_CLIENT_SECRET)
+            self.model.keyword_stat.set_lazy_initialize(NAVER_AD_API_KEY, NAVER_AD_SECRET_KEY, NAVER_AD_CUSTOMER_ID)
+
+            self.view.upload_button.setEnabled(True)
+            self.view.upload_button.setStyleSheet("background-color: white; padding: 10px; color: green")
+        else:
+            self.view.upload_button.setEnabled(False)
+            self.view.upload_button.setStyleSheet("background-color: lightgray; padding: 10px; color: gray")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     logging.info('프로그램이 실행되었습니다.')
 
     naverDeveloper = NaverDeveloper(
-       NAVER_DEVELOPER_CLIENT_ID,
-       NAVER_DEVELOPER_CLIENT_SECRET,
+       None,
+       None,
     )
     keywordStat = KeywordStat(
-        NAVER_AD_API_KEY,
-        NAVER_AD_SECRET_KEY,
-        NAVER_AD_CUSTOMER_ID,
+        None,
+        None,
+        None,
     )
     utilize = Utilize()
 
-    model = Model(naverDeveloper, keywordStat, utilize)
+    model = Model(naverDeveloper, keywordStat)
     view = View()
     presenter = Presenter(model, view)
 

@@ -11,6 +11,10 @@ class NaverDeveloper:
         self.client_id = client_id
         self.client_secret = client_secret
 
+    def set_lazy_initialize(self, client_id, client_secret):
+        self.client_id = client_id
+        self.client_secret = client_secret
+
     def get_ratio(self, keyword, start_date, end_date):
         response_results_all = pd.DataFrame()
 

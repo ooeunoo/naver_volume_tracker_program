@@ -28,6 +28,11 @@ class KeywordStat:
         self.secret_key = secret_key
         self.customer_id = customer_id
 
+    def set_lazy_initialize(self, api_key, secret_key,customer_id):
+        self.api_key = api_key
+        self.secret_key = secret_key
+        self.customer_id = customer_id
+
     def get_header(self, method, uri, api_key, secret_key, customer_id):
         timestamp = str(round(time.time() * 1000))
         signature = Signature.generate(timestamp, method, uri, secret_key)
