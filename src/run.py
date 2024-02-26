@@ -275,5 +275,4 @@ if __name__ == "__main__":
     presenter = Presenter(model, view)
 
     view.show()
-
     sys.exit(app.exec_())
