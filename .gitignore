@@ -165,5 +165,6 @@ Packages/service_account.json
 
 src/config/config.py
 build
-dist/
 env/
+
+run.spec

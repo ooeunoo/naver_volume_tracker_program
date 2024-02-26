@@ -34,14 +34,12 @@ class NaverDeveloper:
             response_json = json.loads(response_body)
         else:
             print("Error Code:" + rescode)
-
         response_results = pd.DataFrame()
         for data in response_json["results"]:
             result = pd.DataFrame(data["data"])
             result["title"] = data["title"]
 
             response_results = pd.concat([response_results, result])
-
         response_results_all = pd.concat([response_results_all, response_results])
         return response_results_all
 

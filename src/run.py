@@ -73,16 +73,24 @@ class Model(QObject):
 
         for row, keyword in task_keywords:
             self.progress_updated.emit(f"월별 거래량 가져오는 중...")
-            volume = self.get_monthly_volume(keyword, "2023-01-01", "2024-01-01")
+            try:
+                volume = self.get_monthly_volume(keyword, "2023-01-01", "2024-01-01")
+            except Exception as e:
+                logging.warning(f'{keyword} 월별 거래량 가져오기 실패: {e}')
+                volume = pd.DataFrame()
 
             self.progress_updated.emit(f"전체 상품 수 가져오는 중...")
-            total_items = self.naver_developer.get_total_count(keyword)
-
             self.progress_updated.emit(f"전체 해외 상품 수 가져오는 중...")
-            total_exclude_cbshop_items = self.naver_developer.get_exclude_cbshop_count(
-                keyword
-            )
-            total_cbshop_items = total_items - total_exclude_cbshop_items
+
+            try:  
+                total_items = self.naver_developer.get_total_count(keyword)
+                total_exclude_cbshop_items = self.naver_developer.get_exclude_cbshop_count(
+                    keyword
+                )
+                total_cbshop_items = total_items - total_exclude_cbshop_items
+            except Exception as e:
+                logging.warning(f'{keyword} 상품 수 가져오기 실패: {e}')
+                continue
 
             self.progress_updated.emit(f"엑셀 데이터 업데이트 중...")
 
@@ -109,11 +117,9 @@ class Model(QObject):
 
     def get_monthly_volume(self, keyword, start_date, end_date):
         logging.info(f"{keyword} 작업 중...")
-
         ratios = self.naver_developer.get_ratio(keyword, start_date, end_date)
         stat = self.keyword_stat.get_stat(keyword)
-            
-
+ 
         if ratios.empty:
             return pd.DataFrame()
 
@@ -190,6 +196,7 @@ class Presenter:
 
     def on_processing_finished(self):
         self.view.process_guide.setText("파일이 업데이트되었습니다.")
+        logging.info("파일이 업데이트되었습니다.")
 
 
 if __name__ == "__main__":
