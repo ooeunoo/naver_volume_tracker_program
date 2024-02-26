@@ -162,3 +162,8 @@ cython_debug/
 Packages/service_account.json
 
 *.DS_Store
+
+config/config.py
+build
+dist/
+env/
