@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 
 Packages/service_account.json
+
+*.DS_Store
