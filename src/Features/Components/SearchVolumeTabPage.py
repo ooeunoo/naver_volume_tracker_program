@@ -131,7 +131,8 @@ class SearchVolumeTabPage(QWidget):
         try:
             forms = self.chat_gpt_instance.generate_train_form(train_data_question, train_data_answer, real_question)
             result = self.chat_gpt_instance.ask_keyword_question(forms)
-            result_json_array =  extract_json_list(result)
+            print(result)
+            result_json_array =  extract_json_list(result.replace("'", '"') )
             print(result_json_array)
             print(type(result_json_array))
         except Exception as e:
@@ -204,10 +205,7 @@ class SearchVolumeTabPage(QWidget):
 
             volumes = self._get_monthly_volumes(keyword, '2023-01-01', '2024-01-01')
             total_items, total_cbshop_items = self._get_total_items_and_cbshop_items(keyword)
-            if volumes.empty:
-                data = self._fill_empty_data()
-            else:
-                data = self._fill_data(volumes, total_items, total_cbshop_items)
+            data = self._fill_data(volumes, total_items, total_cbshop_items)
        
             # 테이블 업데이트
             for header, value in data.items():
@@ -278,34 +276,33 @@ class SearchVolumeTabPage(QWidget):
             total_cbshop_items = total_items - total_exclude_cbshop_items
             return (total_items, total_cbshop_items)
         except Exception as e:
-            print(e)
             return (None, None)
 
     def _fill_data(self, volumes, total_items, total_cbshop_items):
         cbshop_ratio = None if total_cbshop_items == None or total_items == None else total_cbshop_items / total_items * 100
 
         result = {
-            "전체 상품수": total_items,
-            "해외 상품수": total_cbshop_items,
-            "해외 상품 비율": None if cbshop_ratio == None else "{:.2f}%".format(cbshop_ratio),
+            "전체 상품수": '-' if total_items == None else total_items,
+            "해외 상품수": '-' if total_cbshop_items == None else total_cbshop_items,
+            "해외 상품 비율": '-' if cbshop_ratio == None else "{:.2f}%".format(cbshop_ratio),
         }
+
 
         for month in  ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]:
             try:
-                month_volume = volumes.loc[
-                    volumes["period"] == f"2023-{month[:-1].zfill(2)}-01",
-                    "검색수",
-                ].values[0]
+                if volumes.empty:
+                    month_volume = '-'
+                else:
+                    month_volume = volumes.loc[
+                        volumes["period"] == f"2023-{month[:-1].zfill(2)}-01",
+                        "검색수",
+                    ].values[0]
             except IndexError:
                 month_volume = "-"
             result[month] = month_volume
 
         return result
 
-    def _fill_empty_data(self):
-        return {
-            "전체 상품수": None,"해외 상품수": None,"해외 상품 비율": None,"1월": None,"2월": None,"3월": None,"4월": None,"5월": None,"6월": None,"7월": None,"8월": None,"9월": None,"10월": None,"11월": None,"12월": None
-        }
 
 
 

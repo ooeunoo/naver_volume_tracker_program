@@ -61,7 +61,6 @@ class NaverDeveloper:
 
         response = urllib.request.urlopen(total_count_request)
         rescode = response.getcode()
-
         if rescode == 200:
             response_body = response.read()
             response_json = json.loads(response_body)
@@ -91,4 +90,23 @@ class NaverDeveloper:
 
 
 if __name__ == "__main__":
-    pass
+    naver = NaverDeveloper('5m6oyCUN7qd4uQdZ8dKw', 'CYeljR9zbB')
+    r = naver.get_total_count("이온 아이저 탁상형") 
+
+    t = naver.get_exclude_cbshop_count('이온 아이저 탁상형')
+
+    def _get_total_items_and_cbshop_items( keyword):
+        try:
+            total_items = naver.get_total_count(keyword)
+            
+            total_exclude_cbshop_items = naver.get_exclude_cbshop_count(keyword)
+            total_cbshop_items = total_items - total_exclude_cbshop_items
+            return (total_items, total_cbshop_items)
+        except Exception as e:
+            print(e)
+            return (None, None)
+    print(r)
+    print(t)
+
+    total_item, total_cbshop_itemss = _get_total_items_and_cbshop_items('이온 아이저 탁상형')
+    print(total_item,total_cbshop_itemss)
