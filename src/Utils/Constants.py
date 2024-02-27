@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 KEY = {
     "ND_CLIENT_ID": "ND_CLIENT_ID",
     "ND_CLIENT_SECRET": "ND_CLIENT_SECRET",

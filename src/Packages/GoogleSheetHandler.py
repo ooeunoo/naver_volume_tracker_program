@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread.cell import Cell

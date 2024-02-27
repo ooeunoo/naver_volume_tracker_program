@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import json
 def extract_json_list(input_string):
     json_list = []

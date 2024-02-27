@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QTableWidget,
     QTableWidgetItem, QRadioButton, QMessageBox
@@ -131,12 +133,9 @@ class SearchVolumeTabPage(QWidget):
         try:
             forms = self.chat_gpt_instance.generate_train_form(train_data_question, train_data_answer, real_question)
             result = self.chat_gpt_instance.ask_keyword_question(forms)
-            print(result)
             result_json_array =  extract_json_list(result.replace("'", '"') )
-            print(result_json_array)
-            print(type(result_json_array))
         except Exception as e:
-            self._alert_event("ChatGPT 답변 오류: 다시 시도하면 될 수도 있음")
+            self._alert_event(f"ChatGPT 답변 오류: {e}")
             print(e)
             return
 
