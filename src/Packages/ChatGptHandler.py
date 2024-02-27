@@ -29,13 +29,4 @@ class ChatGptHandler:
 
 # 예제 사용
 if __name__ == "__main__":
-    api_key = "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"
-    chatbot = ChatGptHandler(api_key)
-    
-    question = [
-         {"role": "system", "content": "You are a helpful assistant."},
-         {"role": "user", "content": "Hi"}
-    ]
-    answer = chatbot.ask_keyword_question(question)
-    print("Question:", question)
-    print("Answer:", answer)
+    pass

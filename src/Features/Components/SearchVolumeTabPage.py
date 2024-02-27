@@ -4,13 +4,16 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal,QCoreApplication
 from Packages.ExcelHandler import ExcelHandler
-from Utils.Constants import KEY
 from Packages.NaverDeveloper import NaverDeveloper
 from Packages.NaverAdvertising import NaverAdvertising
 from Packages.ChatGptHandler import ChatGptHandler
+from Utils.Constants import KEY
+from Utils.Helpers import *
 from enum import Enum
 import pandas as pd
 import json
+import ast
+import re
 
 header_mapping = {
     '키워드': 0,
@@ -128,11 +131,7 @@ class SearchVolumeTabPage(QWidget):
         try:
             forms = self.chat_gpt_instance.generate_train_form(train_data_question, train_data_answer, real_question)
             result = self.chat_gpt_instance.ask_keyword_question(forms)
-            print(result)
-            result_json = self.convert_to_json(result)
-            print(result_json)
-            print(type(result_json))
-
+            result_json_array =  extract_json_list(result)
         except Exception as e:
             self._alert_event("ChatGPT 답변 오류: 다시 시도하면 될 수도 있음")
             print(e)
@@ -140,7 +139,7 @@ class SearchVolumeTabPage(QWidget):
 
 
         # 테이블 업데이트
-        for index, item in enumerate(result_json):
+        for index, item in enumerate(result_json_array):
             original_keyword = item['original']  
             main_keyword = item['main']  
 
@@ -149,25 +148,6 @@ class SearchVolumeTabPage(QWidget):
             # 이벤트 루프 처리하여 UI 업데이트
             QCoreApplication.processEvents()
 
-    def convert_to_json(self, data):
-        """
-        데이터를 JSON 형식으로 변환하는 함수
-        :param data: 변환할 데이터 (문자열 또는 JSON 형식의 문자열)
-        :return: JSON 형식으로 변환된 데이터 (파이썬 객체)
-        """
-        try:
-            # 데이터가 이미 JSON 형식인 경우
-            if isinstance(data, str):
-                # 문자열을 JSON 객체로 변환
-                json_data = json.loads(data)
-            else:
-                # 그 외의 경우 (문자열 형식이 아닌 경우)
-                # 데이터를 먼저 JSON 형식으로 직렬화하여 파이썬 객체로 변환
-                json_data = json.loads(json.dumps(data))
-            return json_data
-        except Exception as e:
-            print("Error occurred during conversion:", e)
-            return None
 
     def upload_excel(self):
         # 파일 업로드 다이얼로그 열기

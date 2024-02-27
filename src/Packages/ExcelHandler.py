@@ -59,6 +59,5 @@ if __name__ == "__main__":
         "/Users/seongeun/projects/naver_search_volume/naver_search_volume.xlsx",
     )
     result = excelHandler.get_incomplete_keywords()
-    print(result)
     # json_data = {"2": {"1월": 213}, "3": {"1월": 424, "2월": 123}}
     # google_sheet_handler.bulk_update_cells(json_data)
