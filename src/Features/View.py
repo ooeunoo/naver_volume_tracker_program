@@ -177,5 +177,4 @@ class View(QMainWindow):
 
     # 사용자가 애플리케이션을 종료할 때 설정값을 저장
     def closeEvent(self, event):
-        self.save_storage()
         event.accept()

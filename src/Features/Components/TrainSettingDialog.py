@@ -70,14 +70,11 @@ class TrainSettingDialog(QDialog):
 
     def load_data(self):
         data = self.storage.get_value(KEY["T_DATA"])
-        print(f"asdasdasd {data}")
         try:
             data_json_array = json.loads(data)
-            print(data_json_array)
             for item in data_json_array:
                 keyword = list(item.keys())[0]
                 main_keyword = item[keyword]
-                print(keyword, main_keyword)
                 self.add_row(keyword, main_keyword)
         except:
             pass

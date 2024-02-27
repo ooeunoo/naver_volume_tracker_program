@@ -132,6 +132,8 @@ class SearchVolumeTabPage(QWidget):
             forms = self.chat_gpt_instance.generate_train_form(train_data_question, train_data_answer, real_question)
             result = self.chat_gpt_instance.ask_keyword_question(forms)
             result_json_array =  extract_json_list(result)
+            print(result_json_array)
+            print(type(result_json_array))
         except Exception as e:
             self._alert_event("ChatGPT 답변 오류: 다시 시도하면 될 수도 있음")
             print(e)
